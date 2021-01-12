@@ -122,6 +122,6 @@ def decode(img):
 
 
 if __name__ == "__main__":
-    image = Image.open("/home/xenojohn/AC_PIM_P/images/img.jpg")
-    encode("first commit on this repo", image)
+    image = Image.open("D:\GIT\AC_PIM_P\imagine_modificata.png")
+    #encode("first commit on this repo", image)
     print(decode(image))
