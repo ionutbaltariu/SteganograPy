@@ -1,15 +1,22 @@
 from PIL import Image
 
+# unique sequence is what our encoding ends in, so it can be recognised by the decoder
+# it cannot be any sequence,
+unique_sequence = "0000011100000111"
+
+
 ## @brief function used to see if message can be hidden in the image
 #  @param img - the image 
 #  @return - maximum number of bits that the message can have
 def get_max_number_of_alterable_channels(img):
-        return img.width*img.height*(3/8)
+    return img.width * img.height * (3 / 8)
+
 
 ## @brief function used to transform the message into a stream of bits
 #  @param message - the message
 #  @return - binarized message
 def serialize_message(message):
+    global unique_sequence
     temporary_byte = 0
     payload = str("")
 
@@ -17,18 +24,20 @@ def serialize_message(message):
         # [2:] because bin introduces '0b' as the first 2 bits of th converted string
         # example: 0b01010110 -> [2:] results in 01010110
         temporary_byte = bin(ord(byte))[2:]
-        temporary_byte = '%08d' %int(temporary_byte)
+        temporary_byte = '%08d' % int(temporary_byte)
         payload += temporary_byte
 
-    payload += "0000011100000111"
-        
+    payload += unique_sequence
+
     return payload
+
 
 ## @brief function used to transform an int into bits
 #  @param integer - the integer that we want to binarize
 #  @return - binarized integer
 def serialize_8bit_int(integer):
-    return '%08d' %int(str(bin(integer)[2:]))
+    return '%08d' % int(str(bin(integer)[2:]))
+
 
 ## @brief function used to encode the message into an image
 #  @param message - given message to hide in image
@@ -38,39 +47,40 @@ def encode(message, img):
     payload = serialize_message(message)
 
     # 3.3.3 in documentation
-    if (len(payload)+16) > get_max_number_of_alterable_channels(img):
+    if (len(payload) + 16) > get_max_number_of_alterable_channels(img):
         raise Exception("Message can't fit in image.")
     else:
         message_index = 0
-        matrix = img.load()
 
         for i in range(img.height):
             for j in range(img.width):
-                pixel = img.getpixel((j,i))
+                pixel = img.getpixel((j, i))
 
                 r = serialize_8bit_int(pixel[0])
                 g = serialize_8bit_int(pixel[1])
                 b = serialize_8bit_int(pixel[2])
 
                 # 3.3.4 in documentation
-                if(message_index < len(payload)):
-                    new_r = int(r[:7] + payload[message_index],2)
+                if message_index < len(payload):
+                    new_r = int(r[:7] + payload[message_index], 2)
                     message_index += 1
-                if(message_index < len(payload)):
-                    new_g = int(g[:7] + payload[message_index],2)
+                if message_index < len(payload):
+                    new_g = int(g[:7] + payload[message_index], 2)
                     message_index += 1
-                if(message_index < len(payload)):
-                    new_b = int(b[:7] + payload[message_index],2)
+                if message_index < len(payload):
+                    new_b = int(b[:7] + payload[message_index], 2)
                     message_index += 1
-                
-                matrix[j,i] = (new_r,new_g,new_b)
 
-                if(message_index == len(payload)):
-                    break
-            if(message_index == len(payload)):
-                    break
+                img.putpixel((j, i), (new_r, new_g, new_b))
 
-        #img.save("alterata.jpg")
+                if message_index == len(payload):
+                    break
+            if message_index == len(payload):
+                break
+
+        # we save in .png because PIL jpg compression messes the pixels we've modified
+        img.save("imagine_modificata.png", format='PNG')
+
 
 ## @brief function used to decode the message from an image
 #  @param img - the image from which we want to decode the message
@@ -82,38 +92,36 @@ def decode(img):
 
     for i in range(img.height):
         for j in range(img.width):
-            pixel = img.getpixel((j,i))
+            pixel = img.getpixel((j, i))
 
             r = serialize_8bit_int(pixel[0])
             g = serialize_8bit_int(pixel[1])
             b = serialize_8bit_int(pixel[2])
 
             decoded_payload += r[7]
-            if decoded_payload[-16:] == "0000011100000111" and len(decoded_payload)%8 == 0:
+            if decoded_payload[-len(unique_sequence):] == unique_sequence and len(decoded_payload) % 8 == 0:
                 break
             decoded_payload += g[7]
-            if decoded_payload[-16:] == "0000011100000111" and len(decoded_payload)%8 == 0:
+            if decoded_payload[-len(unique_sequence):] == unique_sequence and len(decoded_payload) % 8 == 0:
                 break
             decoded_payload += b[7]
-            if decoded_payload[-16:] == "0000011100000111" and len(decoded_payload)%8 == 0:
+            if decoded_payload[-len(unique_sequence):] == unique_sequence and len(decoded_payload) % 8 == 0:
                 break
-            
-        if decoded_payload[-16:] == "0000011100000111" and len(decoded_payload)%8 == 0:
-            decoded_payload = decoded_payload[:-16]
+
+        if decoded_payload[-len(unique_sequence):] == unique_sequence and len(decoded_payload) % 8 == 0:
+            decoded_payload = decoded_payload[:-len(unique_sequence)]
             break
 
     for bit in decoded_payload:
         temp_char += bit
         if len(temp_char) % 8 == 0:
-            decoded_message += chr(int(temp_char,2))
+            decoded_message += chr(int(temp_char, 2))
             temp_char = ""
-    
+
     return decoded_message
 
-        
-if __name__ == "__main__":
-    img = Image.open("/home/xenojohn/Projects/AC_PIM_P/images/img.jpg")
-    encode("first commit on this repo",img)
-    print(decode(img))
 
-img.show()
+if __name__ == "__main__":
+    image = Image.open("/home/xenojohn/AC_PIM_P/images/img.jpg")
+    encode("first commit on this repo", image)
+    print(decode(image))
