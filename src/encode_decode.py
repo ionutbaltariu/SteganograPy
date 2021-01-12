@@ -79,7 +79,7 @@ def encode(message, img):
                 break
 
         # we save in .png because PIL jpg compression messes the pixels we've modified
-        img.save("imagine_modificata.png", format='PNG')
+        img.save("Modified_image.png", format='PNG')
 
 
 ## @brief function used to decode the message from an image
@@ -120,8 +120,3 @@ def decode(img):
 
     return decoded_message
 
-
-if __name__ == "__main__":
-    image = Image.open("D:\GIT\AC_PIM_P\imagine_modificata.png")
-    #encode("first commit on this repo", image)
-    print(decode(image))
