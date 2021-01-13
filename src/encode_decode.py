@@ -42,7 +42,7 @@ def serialize_8bit_int(integer):
 ## @brief function used to encode the message into an image
 #  @param message - given message to hide in image
 #  @param img - the image in which we want to hide the message
-def encode(message, img):
+def encode(message, img, save_path):
     # 3.3.2 in documentation
     payload = serialize_message(message)
 
@@ -79,7 +79,7 @@ def encode(message, img):
                 break
 
         # we save in .png because PIL jpg compression messes the pixels we've modified
-        img.save("Modified_image.png", format='PNG')
+        img.save(save_path+"/not_a_suspicious_image.png", format='PNG')
 
 
 ## @brief function used to decode the message from an image
@@ -119,4 +119,3 @@ def decode(img):
             temp_char = ""
 
     return decoded_message
-
