@@ -42,12 +42,12 @@ def serialize_8bit_int(integer):
 ## @brief function used to encode the message into an image
 #  @param message - given message to hide in image
 #  @param img - the image in which we want to hide the message
-def encode(message, img, save_path):
+def encode(message, img, save_path,nr_bits:int):
     # 3.3.2 in documentation
     payload = serialize_message(message)
 
     # 3.3.3 in documentation
-    if (len(payload) + 16) > get_max_number_of_alterable_channels(img):
+    if len(payload) > int(get_max_number_of_alterable_channels(img)*nr_bits):
         raise Exception("Message can't fit in image.")
     else:
         message_index = 0
@@ -62,14 +62,14 @@ def encode(message, img, save_path):
 
                 # 3.3.4 in documentation
                 if message_index < len(payload):
-                    new_r = int(r[:7] + payload[message_index], 2)
-                    message_index += 1
+                    new_r = int(r[:(8-nr_bits)] + payload[message_index:message_index+nr_bits], 2)
+                    message_index += nr_bits
                 if message_index < len(payload):
-                    new_g = int(g[:7] + payload[message_index], 2)
-                    message_index += 1
+                    new_g = int(g[:(8-nr_bits)] + payload[message_index:message_index+nr_bits], 2)
+                    message_index += nr_bits
                 if message_index < len(payload):
-                    new_b = int(b[:7] + payload[message_index], 2)
-                    message_index += 1
+                    new_b = int(b[:(8-nr_bits)] + payload[message_index:message_index+nr_bits], 2)
+                    message_index += nr_bits
 
                 img.putpixel((j, i), (new_r, new_g, new_b))
 
@@ -81,11 +81,10 @@ def encode(message, img, save_path):
         # we save in .png because PIL jpg compression messes the pixels we've modified
         img.save(save_path+"/not_a_suspicious_image.png", format='PNG')
 
-
 ## @brief function used to decode the message from an image
 #  @param img - the image from which we want to decode the message
 #  @return the decoded message in a string from 
-def decode(img):
+def decode(img,nr_bits:int):
     decoded_payload = ""
     decoded_message = ""
     temp_char = ""
@@ -98,13 +97,13 @@ def decode(img):
             g = serialize_8bit_int(pixel[1])
             b = serialize_8bit_int(pixel[2])
 
-            decoded_payload += r[7]
+            decoded_payload += r[(8-nr_bits):]
             if decoded_payload[-len(unique_sequence):] == unique_sequence and len(decoded_payload) % 8 == 0:
                 break
-            decoded_payload += g[7]
+            decoded_payload += g[(8-nr_bits):]
             if decoded_payload[-len(unique_sequence):] == unique_sequence and len(decoded_payload) % 8 == 0:
                 break
-            decoded_payload += b[7]
+            decoded_payload += b[(8-nr_bits):]
             if decoded_payload[-len(unique_sequence):] == unique_sequence and len(decoded_payload) % 8 == 0:
                 break
 

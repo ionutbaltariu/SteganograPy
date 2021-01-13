@@ -51,21 +51,29 @@ class Gui:
         Label(self.encode_frame, text="Enter message:").grid(row=0, column=0)
         self.msg = Entry(self.encode_frame, width=35)
         self.msg.grid(row=1, column=0)
+        Label(self.encode_frame,text="Insert number of bits per channel to encode").grid(row=2,column=0)
+        self.combo_box=ttk.Combobox(self.encode_frame,values=[1,2,4,8])
+        self.combo_box.grid(row=3,column=0)
+        self.combo_box.current(0)
         self.browse_button = Button(self.encode_frame, text="Browse Image", command=self.read_image)
         self.store_location_button = Button(self.encode_frame, text="Save Location",
                                             command=lambda: self.save_location())
         self.submit_button = Button(self.encode_frame, text="Encode",
                                     command=lambda: self.encode_img(self.msg.get(), self.save_path))
-        self.browse_button.grid(row=2, column=0)
-        self.store_location_button.grid(row=3, column=0)
-        self.submit_button.grid(row=4, column=0)
+        self.browse_button.grid(row=4, column=0)
+        self.store_location_button.grid(row=5, column=0)
+        self.submit_button.grid(row=6, column=0)
 
         # decode tab
         self.decode_browse_button = Button(self.decode_frame, text="Browse Image", command=self.read_image)
         self.decode_submit_button = Button(self.decode_frame, text="Decode",
                                            command=lambda: self.decode_msg(self.image))
         self.decode_browse_button.grid(row=0, column=0)
-        self.decode_submit_button.grid(row=1, column=0)
+        Label(self.decode_frame,text="Insert number of bits per channel to decode").grid(row=1,column=0)
+        self.combo_box=ttk.Combobox(self.decode_frame,values=[1,2,4,8])
+        self.combo_box.grid(row=2,column=0)
+        self.combo_box.current(0)
+        self.decode_submit_button.grid(row=3, column=0)
 
         # about tab
         self.about_text = Label(self.about_frame, text="\nEncode and decode messages from images\n"
@@ -110,7 +118,7 @@ class Gui:
         elif text == "":
             logging.error("Please insert the message to be encoded in the image.")
         else:
-            encode(text, self.image, save_path)
+            encode(text, self.image, save_path,int(self.combo_box.get()))
             logging.info("Message successfully encoded.")
             logging.warning("A new window will pop up with the image that contains your message embedded in it.")
             self.image.show(title="Image with encoded message.")
@@ -121,7 +129,7 @@ class Gui:
         # if image is browsed
         if img is not None:
             global decoded_msg
-            decoded_msg = decode(img)
+            decoded_msg = decode(img,int(self.combo_box.get()))
             logging.info("The decoded message is: " + decoded_msg)
             self.image = None
         else:
