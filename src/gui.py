@@ -52,9 +52,11 @@ class Gui:
         self.msg = Entry(self.encode_frame, width=35)
         self.msg.grid(row=1, column=0)
         Label(self.encode_frame,text="Insert number of bits per channel to encode").grid(row=2,column=0)
-        self.combo_box=ttk.Combobox(self.encode_frame,values=[1,2,4,8])
-        self.combo_box.grid(row=3,column=0)
-        self.combo_box.current(0)
+
+        self.combo_box1=ttk.Combobox(self.encode_frame,values=[1,2,4,8])
+        self.combo_box1.grid(row=3,column=0)
+        self.combo_box1.current(0)
+        
         self.browse_button = Button(self.encode_frame, text="Browse Image", command=self.read_image)
         self.store_location_button = Button(self.encode_frame, text="Save Location",
                                             command=lambda: self.save_location())
@@ -70,9 +72,11 @@ class Gui:
                                            command=lambda: self.decode_msg(self.image))
         self.decode_browse_button.grid(row=0, column=0)
         Label(self.decode_frame,text="Insert number of bits per channel to decode").grid(row=1,column=0)
-        self.combo_box=ttk.Combobox(self.decode_frame,values=[1,2,4,8])
-        self.combo_box.grid(row=2,column=0)
-        self.combo_box.current(0)
+        
+        self.combo_box2=ttk.Combobox(self.decode_frame,values=[1,2,4,8])
+        self.combo_box2.grid(row=2,column=0)
+        self.combo_box2.current(0)
+
         self.decode_submit_button.grid(row=3, column=0)
 
         # about tab
@@ -114,11 +118,11 @@ class Gui:
 
     def encode_img(self, text, save_path):
         if self.image is None:
-            logging.error("Please insert the image to be encoded.")
+            logging.error("Please insert the image to be encoded.") 
         elif text == "":
             logging.error("Please insert the message to be encoded in the image.")
         else:
-            encode(text, self.image, save_path,int(self.combo_box.get()))
+            encode(text, self.image, save_path,int(self.combo_box1.get()))
             logging.info("Message successfully encoded.")
             logging.warning("A new window will pop up with the image that contains your message embedded in it.")
             self.image.show(title="Image with encoded message.")
@@ -129,7 +133,7 @@ class Gui:
         # if image is browsed
         if img is not None:
             global decoded_msg
-            decoded_msg = decode(img,int(self.combo_box.get()))
+            decoded_msg = decode(img,int(self.combo_box2.get()))
             logging.info("The decoded message is: " + decoded_msg)
             self.image = None
         else:
